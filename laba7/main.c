@@ -1,89 +1,60 @@
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 
-#define SIZE 4  // размер массива
-
-// Структура для хранения информации о человеке
 struct human {
-    char name[50];      // имя
-    char lastname[50];  // фамилия
-    int year;           // год рождения
+    char name[50];
+    char lastname[50];
+    int year;
 };
 
 int main() {
-    // Объявляем все переменные в начале (студенческий стиль)
-    struct human array1[SIZE];  // исходный массив
-    struct human array2[SIZE];  // отсортированный массив
-    struct human temp;          // для обмена при сортировке
-    int i, j, choice;           // счётчики и переменная выбора
-    FILE *file;                 // указатель на файл
+    struct human *arr1, *arr2, temp;
+    int n, choice, i, j;
+    FILE *f;
     
-    // Выбор способа ввода
-    printf("Выберите способ ввода данных:\n");
-    printf("1 - ввод с клавиатуры\n");
-    printf("2 - ввод из файла\n");
-    printf("Ваш выбор: ");
+    printf("Введите количество людей: ");
+    scanf("%d", &n);
+    
+    arr1 = malloc(n * sizeof(struct human));
+    arr2 = malloc(n * sizeof(struct human));
+    
+    if (!arr1 || !arr2) return 1;
+    
+    printf("1 - ввод с клавиатуры\n2 - ввод из файла\nВыбор: ");
     scanf("%d", &choice);
     
     if (choice == 1) {
-        // Ввод с клавиатуры
-        printf("\nВведите данные о %d людях:\n", SIZE);
-        for (i = 0; i < SIZE; i++) {
-            printf("\nЧеловек %d:\n", i + 1);
-            printf("  Имя: ");
-            scanf("%s", array1[i].name);
-            printf("  Фамилия: ");
-            scanf("%s", array1[i].lastname);
-            printf("  Год рождения: ");
-            scanf("%d", &array1[i].year);
+        for (i = 0; i < n; i++) {
+            printf("%d. Имя Фамилия Год: ", i+1);
+            scanf("%s %s %d", arr1[i].name, arr1[i].lastname, &arr1[i].year);
         }
-    } 
-    else {
-        // Ввод из файла
-        file = fopen("input.txt", "r");
-        if (file == NULL) {
-            printf("Ошибка! Не удалось открыть файл input.txt\n");
-            return 1;  // выход с ошибкой
-        }
-        
-        // Читаем данные из файла
-        for (i = 0; i < SIZE; i++) {
-            fscanf(file, "%s %s %d", array1[i].name, array1[i].lastname, &array1[i].year);
-        }
-        fclose(file);  // закрываем файл
-        printf("Данные успешно загружены из файла!\n");
+    } else {
+        f = fopen("input.txt", "r");
+        if (!f) return 1;
+        for (i = 0; i < n; i++)
+            fscanf(f, "%s %s %d", arr1[i].name, arr1[i].lastname, &arr1[i].year);
+        fclose(f);
     }
     
-    for (i = 0; i < SIZE; i++) {
-        array2[i] = array1[i];  // копируем структуры
-    }
-
-    // Сортируем второй массив по возрастанию года рождения
-    for (i = 0; i < SIZE - 1; i++) {
-        for (j = 0; j < SIZE - i - 1; j++) {
-            if (array2[j].year > array2[j + 1].year) {
-                // Меняем местами
-                temp = array2[j];
-                array2[j] = array2[j + 1];
-                array2[j + 1] = temp;
+    for (i = 0; i < n; i++) arr2[i] = arr1[i];
+    
+    for (i = 0; i < n-1; i++)
+        for (j = 0; j < n-i-1; j++)
+            if (arr2[j].year > arr2[j+1].year) {
+                temp = arr2[j];
+                arr2[j] = arr2[j+1];
+                arr2[j+1] = temp;
             }
-        }
-    }
     
-    printf("\n Результат \n");
+    printf("\nИсходный:\n");
+    for (i = 0; i < n; i++)
+        printf("%d. %s %s, %d\n", i+1, arr1[i].name, arr1[i].lastname, arr1[i].year);
     
-    // Вывод первого массива (оригинальный порядок)
-    printf("\nИсходный массив:\n");
-    for (i = 0; i < SIZE; i++) {
-        printf("%d. %s %s, %d год\n", i + 1, array1[i].name, array1[i].lastname, array1[i].year);
-    }
+    printf("\nОтсортированный:\n");
+    for (i = 0; i < n; i++)
+        printf("%d. %s %s, %d\n", i+1, arr2[i].name, arr2[i].lastname, arr2[i].year);
     
-    // Вывод второго массива (отсортированный по годам)
-    printf("\nОтсортированный массив (по возрастанию года):\n");
-    for (i = 0; i < SIZE; i++) {
-        printf("%d. %s %s, %d год\n", i + 1, array2[i].name, array2[i].lastname, array2[i].year);
-    }
-    
-    printf("\nПрограмма завершена!\n");
-    return 0;  // успешное завершение
+    free(arr1);
+    free(arr2);
+    return 0;
 }
